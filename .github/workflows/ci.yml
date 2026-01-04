@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -25,14 +25,14 @@ jobs:
           pip install -r requirements.txt
           pip install -e .
 
-      - name: Run pytest
-        run: pytest -q
+      - name: Run tests
+        run: pytest -v
 
-      - name: Generate simulation artifacts
+      - name: Generate artifacts
         run: python -m orbital_slit.export_artifacts
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dynamic-slit-results
+          name: slit-results
           path: artifacts/
