@@ -1,49 +1,78 @@
-import math
-import random
 import numpy as np
-import pandas as pd
+import matplotlib.pyplot as plt
 
-def simulate_collect(
-    R,
-    D,
-    slit_width=0.05,
-    L=1.0,
-    v_center=0.6,
-    omega=4*math.pi,
-    N_trials=2000,
-    n_centers=50,
-    dt=0.003,
-):
-    centers_y = np.linspace(D - R/2, D + R/2, n_centers)
-    hits = []
+# -----------------------
+# PARAMÈTRES PHYSIQUES
+# -----------------------
+R = 1.0              # rayon de l’orbite (FIXE)
+L = 5.0              # distance écran détecteur
+a = 0.05             # largeur du passage
+vx = 1.0             # vitesse horizontale du centre
+omega = 2 * np.pi    # vitesse angulaire
+N = 200_000          # nombre de points
 
-    for cy in centers_y:
-        for _ in range(N_trials):
-            theta = random.random() * 2 * math.pi
-            cx = -2 * max(R, 1.0)
-            x_prev = cx + R * math.cos(theta)
-            theta_prev = theta
+# -----------------------
+# FONCTION DE SIMULATION
+# -----------------------
+def simulate(D):
+    impacts = []
 
-            for _ in range(2000):
-                cx += v_center * dt
-                theta += omega * dt
-                x_curr = cx + R * math.cos(theta)
+    # balayage du centre (TA règle)
+    y_centers = np.random.uniform(
+        D - R/2,
+        D + R/2,
+        N
+    )
 
-                if x_prev < 0 <= x_curr:
-                    frac = -x_prev / (x_curr - x_prev)
-                    theta_cross = theta_prev + omega * frac * dt
-                    y_cross = cy + R * math.sin(theta_cross)
+    # phase orbitale aléatoire
+    theta = np.random.uniform(0, 2*np.pi, N)
 
-                    if abs(y_cross) <= slit_width / 2:
-                        vx = v_center - R * omega * math.sin(theta_cross)
-                        vy = R * omega * math.cos(theta_cross)
-                        if vx > 0:
-                            t = L / vx
-                            y_hit = y_cross + vy * t
-                            hits.append(y_hit)
-                    break
+    # position au passage x = 0
+    y_pass = y_centers + R * np.sin(theta)
 
-                x_prev = x_curr
-                theta_prev = theta
+    # condition de passage
+    mask = np.abs(y_pass) <= a/2
 
-    return np.array(hits)
+    # vitesses transverses au passage
+    vy = R * omega * np.cos(theta[mask])
+    vx_eff = vx - R * omega * np.sin(theta[mask])
+
+    # élimination des trajectoires rétrogrades
+    mask2 = vx_eff > 0
+    y_pass = y_pass[mask][mask2]
+    vy = vy[mask2]
+    vx_eff = vx_eff[mask2]
+
+    # impact sur l’écran détecteur
+    t = L / vx_eff
+    y_hit = y_pass + vy * t
+
+    return y_hit
+
+# -----------------------
+# CAS À COMPARER
+# -----------------------
+D_small = 0.7   # D < R
+D_large = 1.4   # D > R
+
+hits_small = simulate(D_small)
+hits_large = simulate(D_large)
+
+# -----------------------
+# PLOTS (BRUTS)
+# -----------------------
+plt.figure(figsize=(10,4))
+
+plt.subplot(1,2,1)
+plt.hist(hits_small, bins=400, density=True)
+plt.title("D < R")
+plt.xlabel("y impact")
+plt.ylabel("densité")
+
+plt.subplot(1,2,2)
+plt.hist(hits_large, bins=400, density=True)
+plt.title("D > R")
+plt.xlabel("y impact")
+
+plt.tight_layout()
+plt.show()
