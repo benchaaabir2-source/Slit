@@ -1,12 +1,12 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "orbital-slit"
 version = "0.1.0"
-description = "Orbital slit simulation (R fixed, D variable)"
-authors = [{ name = "Your Name" }]
+description = "Orbital slit simulation with correlated dynamics"
+authors = [{ name = "M. Cherigui" }]
 requires-python = ">=3.10"
 
 [tool.setuptools]
@@ -14,3 +14,6 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
