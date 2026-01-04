@@ -1,41 +1,33 @@
-import json
-import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
-from orbital_slit.analysis import gaussian_mle
+from orbital_slit.simulation import simulate_dynamic
 
 OUT = Path("artifacts")
 OUT.mkdir(exist_ok=True)
 
-# fake data example (replace later with real simulation output)
-data_small = np.random.normal(0.0, 1.0, 20_000)
-data_large = np.random.normal(0.0, 1.8, 20_000)
+# paramètres principaux
+R = 1.0
+L = 5.0
+a = 0.05
 
-mu_s, sigma_s = gaussian_mle(data_small)
-mu_l, sigma_l = gaussian_mle(data_large)
+# valeurs D à comparer
+D_small = 0.7   # D < R
+D_large = 1.4   # D > R
 
-# Save params
-params = {
-    "D<R": {"mu": mu_s, "sigma": sigma_s},
-    "D>R": {"mu": mu_l, "sigma": sigma_l},
-}
+# simulation
+hits_small = simulate_dynamic(D_small, R=R, L=L, a=a)
+hits_large = simulate_dynamic(D_large, R=R, L=L, a=a)
 
-with open(OUT / "gaussian_params.json", "w") as f:
-    json.dump(params, f, indent=2)
+# histogrammes
+plt.figure(figsize=(10,5))
+plt.hist(hits_small, bins=300, density=True, alpha=0.6, label="D<R")
+plt.hist(hits_large, bins=300, density=True, alpha=0.6, label="D>R")
+plt.title("Comparaison des impacts pour D<R et D>R")
+plt.xlabel("y impact")
+plt.ylabel("densité")
+plt.legend()
+plt.tight_layout()
+plt.savefig(OUT / "comparison_hist.png")
+plt.close()
 
-# Plot
-def plot_gauss(data, mu, sigma, name):
-    x = np.linspace(mu - 5*sigma, mu + 5*sigma, 500)
-    y = (1/(sigma*np.sqrt(2*np.pi))) * np.exp(-(x-mu)**2/(2*sigma**2))
-
-    plt.figure()
-    plt.hist(data, bins=200, density=True, alpha=0.6)
-    plt.plot(x, y)
-    plt.title(name)
-    plt.savefig(OUT / f"{name}.png")
-    plt.close()
-
-plot_gauss(data_small, mu_s, sigma_s, "gaussian_R_fixed_D_small")
-plot_gauss(data_large, mu_l, sigma_l, "gaussian_R_fixed_D_large")
-
-print("Artifacts generated in /artifacts")
+print("Artifacts generated in /artifacts/comparison_hist.png")
