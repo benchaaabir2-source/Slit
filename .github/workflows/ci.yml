@@ -1,11 +1,12 @@
-name: CI
+name: CI Full Dynamic Simulation
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 jobs:
-  test-and-export:
+  test-and-simulate:
     runs-on: ubuntu-latest
 
     steps:
@@ -30,12 +31,12 @@ jobs:
         run: |
           pytest -v
 
-      - name: Generate scientific artifacts
+      - name: Run dynamic orbital simulation (Option 2)
         run: |
-          python -m orbital_slit.export_artifacts
+          python -m orbital_slit.simulation
 
-      - name: Upload artifacts
+      - name: Upload simulation artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: slit-results
+          name: slit-simulation-results
           path: artifacts/
