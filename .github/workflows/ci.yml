@@ -9,7 +9,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -24,6 +25,17 @@ jobs:
         run: |
           pip install -r requirements.txt
 
+      - name: Install package
+        run: |
+          pip install -e .
+
+      - name: Debug install (IMPORTANT)
+        run: |
+          python - << 'EOF'
+          import orbital_slit
+          print("orbital_slit imported from:", orbital_slit.__file__)
+          EOF
+
       - name: Run tests
         run: |
-          pytest
+          pytest -v
