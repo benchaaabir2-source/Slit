@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from pathlib import Path
+import numpy as np                 # <-- c'était manquant
 from orbital_slit.simulation import simulate_dynamic
 
 OUT = Path("artifacts")
@@ -10,7 +11,7 @@ R = 1.0
 L = 20.0
 a = 0.05
 vx = 0.05
-omega = 6*np.pi
+omega = 6 * np.pi                # <-- np.pi OK maintenant
 dt = 0.001
 N_centers = 300
 N_points = 5
